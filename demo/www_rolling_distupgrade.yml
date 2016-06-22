@@ -1,0 +1,12 @@
+---
+# distupgrade www
+# call
+# ansible-playbook -i ./inventory/demo/ www_rolling_distupgrade.yml
+
+- name: www
+  hosts: www
+
+  roles:
+     - role: arnaudblancher.apt_distupgrade
+
+

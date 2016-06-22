@@ -1,0 +1,87 @@
+---
+
+# upgrade server then reboot
+
+- name: "date check"
+  command: date +%d/%m/%Y-%H:%M:%S
+  register: time
+  # Do not say 'changed' if date is ok (think about idempotence check)
+  changed_when: 'time.rc!=0'
+- debug: msg="{{time.stdout}}"
+
+- name: "make sure python-apt and apt-utils is on remote server"
+  raw: apt-get -y install python-apt apt-utils
+
+- name: "remove debian cache"
+  command: sudo apt-get clean warn=false
+  # Do not say 'changed' if apt-get clean is ok (think about idempotence check)
+  register: retour
+  changed_when: 'retour.rc!=0'
+
+- name: "update apt cache"
+  apt: update_cache=yes
+
+- name: "dist upgrade"
+  apt: upgrade=dist
+
+- name: "date check"
+  command: date +%d/%m/%Y-%H:%M:%S
+  register: time
+  # Do not say 'changed' if date is ok (think about idempotence check)
+  changed_when: 'time.rc!=0'
+- debug: msg="{{time.stdout}}"
+
+- name: "time of last reboot"
+  # '|' so need 'shell' and not 'command'
+  shell: mybootdate=$(who -b | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate" +%s
+  register: bootdate
+  changed_when: 'bootdate.rc!=0'
+- debug: msg="{{bootdate.stdout}}"
+
+# FIXME
+# don't work with docker, should restart conteneur from outside, cf https://docs.docker.com/engine/reference/commandline/run/
+# check ansible_connection=docker ?
+- name: " *** reboot ***"
+  command: shutdown -r now &
+  async: 0
+  poll: 0
+  ignore_errors: true
+
+# Le serveur n'as pas forcement le temps d'arreter les services qu'on teste déjà leur présence ...
+# petite pause pour contourner le pb
+- pause: seconds=2
+
+
+- name: "waiting ssh is up again ..."
+  # '|' so need 'shell' and not 'command'
+  shell: mybootdate2=$(who -b | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate2" +%s
+  register: bootdate2
+  changed_when: 'bootdate2.rc!=0'
+#  changed_when: False
+  retries: 36000
+  delay: 1
+  until: bootdate.stdout < bootdate2.stdout
+
+- debug: msg="{{bootdate2.stdout}}"
+
+#- name: "waiting ssh is up again ..."
+#  # FXIME : enregistrer le hostname du serveur avant le reboot car le inventory_hostname peut être une ip
+#  command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} hostname
+#  delegate_to: localhost
+#  sudo: false
+#  changed_when: False
+#  retries: 3600
+#  delay: 10
+#  register: res
+#  until: res.stdout == "{{inventory_hostname}}"
+
+- name: "remove debian apt cache"
+  command: sudo apt-get clean
+
+- name: "date check"
+  command: date +%d/%m/%Y-%H:%M:%S
+  register: time
+- debug: msg="{{time.stdout}}"
+
+- debug: msg="server and ssh are up again"
+
