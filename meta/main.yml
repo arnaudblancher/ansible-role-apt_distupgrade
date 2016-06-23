@@ -17,7 +17,7 @@ galaxy_info:
   galaxy_tags:
     - system
     - apt
-    - dist-upgrade
+    - upgrade
     - reboot
     - ssh
 
