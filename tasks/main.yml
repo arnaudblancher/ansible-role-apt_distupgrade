@@ -49,7 +49,7 @@
 
 # Le serveur n'as pas forcement le temps d'arreter les services qu'on teste déjà leur présence ...
 # petite pause pour contourner le pb
-- pause: seconds=2
+- pause: seconds={{ apt_distupgrade_reboot_pause }}
 
 
 - name: "waiting ssh is up again ..."
@@ -58,8 +58,8 @@
   register: bootdate2
   changed_when: 'bootdate2.rc!=0'
 #  changed_when: False
-  retries: 36000
-  delay: 1
+  retries: {{ apt_distupgrade_sshup_retries }}
+  delay: {{ apt_distupgrade_sshup_delay }}
   until: bootdate.stdout < bootdate2.stdout
 
 - debug: msg="{{bootdate2.stdout}}"

@@ -1,7 +1,7 @@
 arnaudblancher.apt_distupgrade
 ==============================
 
-Goal : upgrade debian/ubuntu, reboot and wait for ssh is up ugain
+Goal : Ansible role for upgrade debian/ubuntu, reboot then wait for ssh is up ugain
 
 Requirements
 ------------
@@ -12,7 +12,7 @@ none
 Role Variables
 --------------
 
-none
+please see ./defaults/main.yml
 
 Dependencies
 ------------
@@ -21,8 +21,8 @@ None
 
 Example Playbook
 ----------------
-Please see subdirectory [./demo/](./demo/)
 
+Please see subdirectory [./demo/](./demo/)
 
 License
 -------
@@ -34,6 +34,6 @@ Author Information
 
 Arnaud Blancher
 
-[https://github.com/arnaudblancher/ansible-role-apt_distugrade](https://github.com/arnaudblancher/ansible-role-apt_distupgrade)
-
+- Sources on github : [https://github.com/arnaudblancher/ansible-role-apt_distugrade](github.com/arnaudblancher/ansible-role-apt_distupgrade)
+- Role on Ansible galaxy :  [https://galaxy.ansible.com/arnaudblancher/apt_distupgrade/](galaxy.ansible.com/arnaudblancher/apt_distupgrade/)
 
