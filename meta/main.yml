@@ -1,6 +1,6 @@
 galaxy_info:
   author: Arnaud Blancher
-  description:  dist-upgrade debian/ubuntu and waiting for ssh is up again
+  description:  Ansible role for dist-upgrade debian/ubuntu and waiting for ssh is up again
   license: GPLv3
   min_ansible_version: 2.0
 
@@ -17,7 +17,7 @@ galaxy_info:
   galaxy_tags:
     - system
     - apt
-    - apt dist-upgrade
+    - dist-upgrade
     - reboot
     - ssh
 
