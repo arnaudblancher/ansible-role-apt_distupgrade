@@ -1,7 +1,7 @@
 arnaudblancher.apt_distupgrade
 ==============================
 
-Goal : Ansible role for upgrade debian/ubuntu, reboot then wait for ssh is up ugain
+Ansible role for upgrade debian/ubuntu, reboot then wait for ssh is up ugain
 
 Requirements
 ------------
