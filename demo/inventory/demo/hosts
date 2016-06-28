@@ -1,2 +1,2 @@
 [www]
-10.0.0.62 ansible_ssh_user=root
+db62.mediawiki.dev-arnaud.toshiba.local ansible_ssh_user=root
