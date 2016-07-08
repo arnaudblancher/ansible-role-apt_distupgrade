@@ -32,7 +32,6 @@
 - debug: msg="{{time.stdout}}"
 
 - block:
-  tags: apt_distupgrade-reboot
     - name: "time of last reboot"
       # '|' so need 'shell' and not 'command'
       shell: mybootdate=$(who -b | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate" +%s
@@ -104,7 +103,8 @@
   #  delay: 10
   #  register: res
   #  until: res.stdout == "{{inventory_hostname}}"
-
+  tags: [apt_distupgrade-reboot]
+  
 - name: "clean debian apt cache"
   command: apt-get clean warn=false
   register: retour
