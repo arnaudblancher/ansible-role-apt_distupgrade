@@ -31,84 +31,79 @@
   changed_when: 'time.rc!=0'
 - debug: msg="{{time.stdout}}"
 
-- name: "time of last reboot"
-  # '|' so need 'shell' and not 'command'
-  shell: mybootdate=$(who -b | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate" +%s
-  register: bootdate
-  changed_when: 'bootdate.rc!=0'
-- debug: msg="{{bootdate.stdout}}"
-
-# FIXME
-# don't work with docker, should restart contenair from outside, cf https://docs.docker.com/engine/reference/commandline/run/
-# check ansible_connection=docker ?
-- name: " *** reboot ***"
-  command: shutdown -r now &
-  async: 0
-  poll: 0
-  ignore_errors: true
-  changed_when: 'retour.rc!=0'
+- block:
   tags: apt_distupgrade-reboot
+    - name: "time of last reboot"
+      # '|' so need 'shell' and not 'command'
+      shell: mybootdate=$(who -b | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate" +%s
+      register: bootdate
+      changed_when: 'bootdate.rc!=0'
+    - debug: msg="{{bootdate.stdout}}"
+
+    # FIXME
+    # don't work with docker, should restart contenair from outside, cf https://docs.docker.com/engine/reference/commandline/run/
+    # check ansible_connection=docker ?
+    - name: " *** reboot ***"
+      command: shutdown -r now &
+      async: 0
+      poll: 0
+      ignore_errors: true
+      changed_when: 'retour.rc!=0'
   
-# Le serveur n'as pas forcement le temps d'arreter les services qu'on teste déjà leur présence ...
-# petite pause pour contourner le pb
-- pause: seconds="{{ apt_distupgrade_reboot_pause }}"
-  tags: apt_distupgrade-reboot
+    # Le serveur n'as pas forcement le temps d'arreter les services qu'on teste déjà leur présence ...
+    # petite pause pour contourner le pb
+    - pause: seconds="{{ apt_distupgrade_reboot_pause }}"
 
-# not a so good solution, but avoid server UNREACHABLE
-- name: "waiting ssh is up again ..."
-  # FXIME : enregistrer le hostname du serveur avant le reboot car le inventory_hostname peut être une ip
-  command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} hostname
-  delegate_to: localhost
-  become: false
-  changed_when: False
-  retries: "{{ apt_distupgrade_sshup_retries }}"
-  delay: "{{ apt_distupgrade_sshup_delay }}"
-  register: res
-  until: res.stdout == "{{inventory_hostname}}"
-  tags: apt_distupgrade-reboot
-  
-# probably the solution, but
-# BUG open https://github.com/ansible/ansible/issues/16133
-# return
-# "stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (fr_FR.UTF-8)\nawk: cmd. line:1: {print\nawk: cmd. line:1:       ^ unexpected newline or end of string",
-#- name: "waiting ssh is up again ..."
-#  #command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} mybootdate2=$(who -b | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate2" +%s
-#  #command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} mybootdate2=$(who -b  2> /dev/null | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate2" +%s
-#  command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} { mybootdate2=$(who -b | awk {'print $3" "$4" "$5'}); } 2> /dev/null &&  date --date="$mybootdate2" +%s
-#  delegate_to: localhost
-#  become: false
-#  changed_when: False
-#  register: bootdate2
-#  retries: "{{ apt_distupgrade_sshup_retries }}"
-#  delay: "{{ apt_distupgrade_sshup_delay }}"
-#  until: bootdate.stdout < bootdate2.stdout
-# tags: apt_distupgrade-reboot
+    # not a so good solution, but avoid server UNREACHABLE
+    - name: "waiting ssh is up again ..."
+    # FXIME : enregistrer le hostname du serveur avant le reboot car le inventory_hostname peut être une ip
+      command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} hostname
+      delegate_to: localhost
+      become: false
+      changed_when: False
+      retries: "{{ apt_distupgrade_sshup_retries }}"
+      delay: "{{ apt_distupgrade_sshup_delay }}"
+      register: res
+      until: res.stdout == "{{inventory_hostname}}"
 
+    # probably the solution, but
+    # BUG open https://github.com/ansible/ansible/issues/16133
+    # return
+    # "stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (fr_FR.UTF-8)\nawk: cmd. line:1: {print\nawk: cmd. line:1:       ^ unexpected newline or end of string",
+    #- name: "waiting ssh is up again ..."
+    #  #command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} mybootdate2=$(who -b | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate2" +%s
+    #  #command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} mybootdate2=$(who -b  2> /dev/null | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate2" +%s
+    #  command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} { mybootdate2=$(who -b | awk {'print $3" "$4" "$5'}); } 2> /dev/null &&  date --date="$mybootdate2" +%s
+    #  delegate_to: localhost
+    #  become: false
+    #  changed_when: False
+    #  register: bootdate2
+    #  retries: "{{ apt_distupgrade_sshup_retries }}"
+    #  delay: "{{ apt_distupgrade_sshup_delay }}"
+    #  until: bootdate.stdout < bootdate2.stdout
 
+    - name: "waiting ssh is up again ..."
+   # '|' so need 'shell' and not 'command'
+      shell: mybootdate2=$(who -b | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate2" +%s
+      register: bootdate2
+      changed_when: 'bootdate2.rc!=0'
+   #  changed_when: False
+      retries: "{{ apt_distupgrade_sshup_retries }}"
+      delay: "{{ apt_distupgrade_sshup_delay }}"
+      until: bootdate.stdout < bootdate2.stdout
 
-- name: "waiting ssh is up again ..."
-  # '|' so need 'shell' and not 'command'
-  shell: mybootdate2=$(who -b | awk {'print $3" "$4" "$5'}) &&  date --date="$mybootdate2" +%s
-  register: bootdate2
-  changed_when: 'bootdate2.rc!=0'
-#  changed_when: False
-  retries: "{{ apt_distupgrade_sshup_retries }}"
-  delay: "{{ apt_distupgrade_sshup_delay }}"
-  until: bootdate.stdout < bootdate2.stdout
-  tags: apt_distupgrade-reboot
-  
-- debug: msg="{{bootdate2.stdout}}"
+    - debug: msg="{{bootdate2.stdout}}"
 
-#- name: "waiting ssh is up again ..."
-#  # FXIME : enregistrer le hostname du serveur avant le reboot car le inventory_hostname peut être une ip
-#  command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} hostname
-#  delegate_to: localhost
-#  become: false
-#  changed_when: False
-#  retries: 3600
-#  delay: 10
-#  register: res
-#  until: res.stdout == "{{inventory_hostname}}"
+  # - name: "waiting ssh is up again ..."
+  #  # FXIME : enregistrer le hostname du serveur avant le reboot car le inventory_hostname peut être une ip
+  #  command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} hostname
+  #  delegate_to: localhost
+  #  become: false
+  #  changed_when: False
+  #  retries: 3600
+  #  delay: 10
+  #  register: res
+  #  until: res.stdout == "{{inventory_hostname}}"
 
 - name: "clean debian apt cache"
   command: apt-get clean warn=false
