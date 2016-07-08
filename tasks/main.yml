@@ -47,10 +47,12 @@
   poll: 0
   ignore_errors: true
   changed_when: 'retour.rc!=0'
-
+  tags: apt_distupgrade-reboot
+  
 # Le serveur n'as pas forcement le temps d'arreter les services qu'on teste déjà leur présence ...
 # petite pause pour contourner le pb
 - pause: seconds="{{ apt_distupgrade_reboot_pause }}"
+  tags: apt_distupgrade-reboot
 
 # not a so good solution, but avoid server UNREACHABLE
 - name: "waiting ssh is up again ..."
