@@ -65,7 +65,8 @@
   delay: "{{ apt_distupgrade_sshup_delay }}"
   register: res
   until: res.stdout == "{{inventory_hostname}}"
-
+  tags: apt_distupgrade-reboot
+  
 # probably the solution, but
 # BUG open https://github.com/ansible/ansible/issues/16133
 # return
@@ -81,6 +82,7 @@
 #  retries: "{{ apt_distupgrade_sshup_retries }}"
 #  delay: "{{ apt_distupgrade_sshup_delay }}"
 #  until: bootdate.stdout < bootdate2.stdout
+# tags: apt_distupgrade-reboot
 
 
 
@@ -93,7 +95,8 @@
   retries: "{{ apt_distupgrade_sshup_retries }}"
   delay: "{{ apt_distupgrade_sshup_delay }}"
   until: bootdate.stdout < bootdate2.stdout
-
+  tags: apt_distupgrade-reboot
+  
 - debug: msg="{{bootdate2.stdout}}"
 
 #- name: "waiting ssh is up again ..."
