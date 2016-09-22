@@ -48,7 +48,7 @@
       poll: 0
       ignore_errors: true
       changed_when: 'retour.rc!=0'
-
+  
     # Le serveur n'as pas forcement le temps d'arreter les services qu'on teste déjà leur présence ...
     # petite pause pour contourner le pb
     - pause: seconds="{{ apt_distupgrade_reboot_pause }}"
@@ -56,7 +56,8 @@
     # not a so good solution, but avoid server UNREACHABLE
     - name: "waiting ssh is up again ..."
     # FXIME : enregistrer le hostname du serveur avant le reboot car le inventory_hostname peut être une ip
-      command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} hostname
+      #command: ssh {{ansible_ssh_user}}@{{inventory_hostname}} hostname
+      command: ssh root@{{inventory_hostname}} hostname
       delegate_to: localhost
       become: false
       changed_when: False
@@ -104,7 +105,7 @@
   #  register: res
   #  until: res.stdout == "{{inventory_hostname}}"
   tags: [apt_distupgrade-reboot]
-
+  
 - name: "clean debian apt cache"
   command: apt-get clean warn=false
   register: retour
